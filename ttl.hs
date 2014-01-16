@@ -1,4 +1,6 @@
+import Control.Monad.ST
 import Data.Array
+import Data.Array.ST
 type Position = (Int, Int)
 
 data Tile = Empty | X | O
@@ -15,14 +17,32 @@ instance Eq Tile where
 
 
 --type Matrix = Array (Int,Int)
-checkLeft m (i,j)
-    | j < 1 = False
-    | otherwise = (m ! (i, (j-1))) == (m ! (i, (j-2)))
 
-neighbourToPair m (i, j) = False -- Checks to see if neighbours have two elements appearing after eachother Maybe Int
+inBounds a (x,y)
+    | x < 0 || y < 0 = False
+    | otherwise =
+    let (_, (i,j)) = bounds a
+    in x <= i && y <= j
+
+checkLeft a (i,j)
+    | inBounds a (i, j-2) = (a ! (i, (j-1))) == (a ! (i, (j-2)))
+    | otherwise = False
+checkRight a (i,j)
+    | inBounds a (i, j+2) = (a ! (i, (j+1))) == (a ! (i, (j+2)))
+    | otherwise = False
+checkUp a (i,j)
+    | inBounds a (i-2, j) = (a ! ((i -1), j)) == (a ! ((i-2), j))
+    | otherwise = False
+checkDown a (i,j)
+    | inBounds a (i+2, j) = (a ! ((i+1), j)) == (a ! ((i+2), j))
+    | otherwise = False
+
+neighbourToPair arr (i, j) = -- Checks to see if neighbours have two elements appearing after eachother Maybe Int
+    let runSTArray arr
 
 elemFilled m (i, j) = False -- Does row/col contain n/2 of any element?
 
+--inBetweenRow m (i, j) =
 inBetween m (i, j) = False -- Is element in between 2 elements of the same value?
 
 guess = False -- Randomly picks an element and dfs that shizz
@@ -32,7 +52,12 @@ solve m =
 
 solver = False
 
-makeArray n m = array ((0,0),(n,m)) [((i,j),Empty) | i<-[0..n], j<-[0..m]]
+
+makeArray n m = do
+        arr <- newArray ((0,0),(9,9)) Empty :: ST s (STArray s (Int,Int) Tile)
+        return arr
+
+-- array ((0,0),(n,m)) [((i,j),Empty) | i<-[0..n], j<-[0..m]]
 -- Validate solution
 --validate :: Matrix -> Bool
 validate m = False
