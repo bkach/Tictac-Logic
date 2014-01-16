@@ -3,25 +3,45 @@ import Data.Array
 
 type Position = (Int, Int)
 
---type Matrix = Array (Int,Int)
+{-type Matrix = Array (Int,Int)-}
 
-inBounds a (x,y)
+{-inBounds a (x,y)-}
+    {-| x < 0 || y < 0 = False-}
+    {-| otherwise =-}
+    {-let (_, (i,j)) = bounds a-}
+    {-in x <= i && y <= j-}
+
+inBounds (rws,cls,board) (x,y)
     | x < 0 || y < 0 = False
-    | otherwise =
-    let (_, (i,j)) = bounds a
-    in x <= i && y <= j
+    | x >= rws || y >= cls = False
+    | otherwise = True
 
-checkLeft a (i,j)
-    | inBounds a (i, j-2) = (a ! (i, (j-1))) == (a ! (i, (j-2)))
+{-checkLeft a (i,j)-}
+    {-| inBounds a (i, j-2) = (a ! (i, (j-1))) == (a ! (i, (j-2)))-}
+    {-| otherwise = False-}
+checkLeft board (i,j)
+    | inBounds board (i, j-2) = (readTile board (i, j-1)) == (readTile board (i, j-2))
     | otherwise = False
-checkRight a (i,j)
-    | inBounds a (i, j+2) = (a ! (i, (j+1))) == (a ! (i, (j+2)))
+
+{-checkRight a (i,j)-}
+    {-| inBounds a (i, j+2) = (a ! (i, (j+1))) == (a ! (i, (j+2)))-}
+    {-| otherwise = False-}
+checkRight board (i,j)
+    | inBounds board (i, j+2) = (readTile board (i, j+1)) == (readTile board (i, j+2))
     | otherwise = False
-checkUp a (i,j)
-    | inBounds a (i-2, j) = (a ! ((i -1), j)) == (a ! ((i-2), j))
+
+{-checkUp a (i,j)-}
+    {-| inBounds a (i-2, j) = (a ! ((i -1), j)) == (a ! ((i-2), j))-}
+    {-| otherwise = False-}
+checkUp board (i,j)
+    | inBounds board (i-2, j) = (readTile board (i-1, j)) == (readTile board (i-2, j))
     | otherwise = False
-checkDown a (i,j)
-    | inBounds a (i+2, j) = (a ! ((i+1), j)) == (a ! ((i+2), j))
+
+{-checkDown a (i,j)-}
+    {-| inBounds a (i+2, j) = (a ! ((i+1), j)) == (a ! ((i+2), j))-}
+    {-| otherwise = False-}
+checkDown board (i,j)
+    | inBounds board (i+2, j) = (readTile board (i+1, j)) == (readTile board (i+2, j))
     | otherwise = False
 
 neighbourToPair arr (i, j) = False -- Checks to see if neighbours have two elements appearing after eachother Maybe Int

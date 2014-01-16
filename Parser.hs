@@ -30,8 +30,11 @@ toTile 'O' = O
 toTile p = error [p]
 
 
+readLine = (map toTile) `fmap` getLine
+
 readWords :: (Read a) => String -> [a]
 readWords = map read . words
+
 lineToReadInt :: IO[Int]
 lineToReadInt = (readWords) `fmap` getLine
 lineToReadStr :: IO[String]
@@ -42,17 +45,12 @@ getBoard = do
     let rws = ln !! 0
         cls = ln !! 1
     board <- Control.Monad.replicateM rws readLine
-    return board
+    return (rws,cls,board)
 
-if' :: Bool -> a -> a -> a
-if' True  x _ = x
-if' False _ y = y
 
-readLine = (map toTile) `fmap` getLine
+readTile (_,_,board) (x,y) = board !! x !! y
 
-writeTile board rw cl new = toList (update rw (getRow board rw cl new) $ fromList board)
+writeTile (_,_,board) rw cl new = toList (update rw (getRow board rw cl new) $ fromList board)
 getRow (x:xs) 0 cl new = toList (getColumn (fromList x) cl new)
 getRow (x:xs) rw cl new = getRow xs (rw-1) cl new
 getColumn board cl new = update cl new $ board
-
-readTile board x y = board !! x !! y
