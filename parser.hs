@@ -1,4 +1,5 @@
-{-# LANGUAGE TemplateHaskell #-}
+module Parser where
+
 import Test.HUnit
 import Data.Foldable
 import Control.Monad
@@ -9,6 +10,7 @@ import Debug.Trace
 import Data.Array
 import Data.List
 import Data.Sequence
+
 
 data Tile = Empty | X | O
 instance Show Tile where
