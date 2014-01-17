@@ -73,6 +73,15 @@ rightTile board (i,j) = readTile board (i,j+1)
 upTile board (i,j) = readTile board (i-1,j)
 downTile board (i,j) = readTile board (i+1,j)
 
+filled [] = True
+filled (x:xs)
+    | rowFilled x /= True = False
+    | otherwise = filled xs
+rowFilled [] = True
+rowFilled (x:xs)
+    | x == Empty = False
+    | otherwise = rowFilled xs
+
 lineToReadInt :: IO[Int]
 lineToReadInt = (readWords) `fmap` getLine
 lineToReadStr :: IO[String]
@@ -84,7 +93,6 @@ getBoard = do
         cls = ln !! 1
     board <- Control.Monad.replicateM rws readLine
     return board
-
 
 readTile board (x,y) = board !! x !! y
 
