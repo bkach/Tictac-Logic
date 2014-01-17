@@ -90,6 +90,10 @@ getLineN rows n
         next <- (getLineN rows (n+1))
         return $ (scanLine n 0 l) ++ next
 
+readWords :: (Read a) => String -> [a]
+readWords = map read . words
+lineToReadInt :: IO[Int]
+lineToReadInt = (readWords) `fmap` getLine
 --readLine = scanLine 0 `fmap` getLine
 
 main = do
