@@ -60,9 +60,7 @@ solve m =
 solver = False
 
 
-makeArray n m = do
-        arr <- newArray ((0,0),(9,9)) Empty :: ST s (STArray s (Int,Int) Tile)
-        return arr
+makeArray n m l = array ((0,0),(n,m)) l --[((i,j),k) | i<-[0..n], j<-[0..m], k<-[1,2,3,4]]
 
 -- array ((0,0),(n,m)) [((i,j),Empty) | i<-[0..n], j<-[0..m]]
 -- Validate solution
@@ -82,9 +80,9 @@ getLineN rows n
 
 --readLine = scanLine 0 `fmap` getLine
 
-main :: IO ()
 main = do
-    ln <- lineToRead
-    let rows = ln !! 0
-        cols = ln !! 1
-    print cols
+    ln <- lineToReadInt
+    let rws = ln !! 0
+        cls = ln !! 1
+    board <- getLineN rws 0
+    let arr = makeArray (rws-1) (cls-1) board
