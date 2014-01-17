@@ -30,16 +30,16 @@ elemFilled m (i, j) = False -- Does row/col contain n/2 of any element?
 inBetween board coord
     | Parser.inBounds board (left coord) &&
         (leftTile board coord) /= Empty &&
-            Parser.inBounds board (right coord) && 
+            Parser.inBounds board (right coord) &&
                 ((leftTile board coord) == (rightTile board coord)) =
                     Just (opposite (leftTile board coord))
     | Parser.inBounds board (up coord) &&
         (upTile board coord) /= Empty &&
-            Parser.inBounds board (down coord) && 
+            Parser.inBounds board (down coord) &&
                 ((upTile board coord) == (downTile board coord)) =
                     Just (opposite (upTile board coord))
     | otherwise = Nothing
-       
+
 
 checkTile board coord
     | readTile board coord /= Empty =
@@ -56,15 +56,21 @@ checkTile board coord
 
 guess = False -- Randomly picks an element and dfs that shizz
 
-solve board = solve' board (0,0)
-solve' board coord
-    | tileResult /= Nothing = 
-        let 
-            newBoard = writeTile board coord (fromJust tileResult)
+solve board =
+    | changed = solve newBoard
+    | filled = newBoard --Guessing
+    | otherwise =
+    where
+        (changed, newBoard) = solve' board (0,0) False
+
+solve' board coord changed
+    | tileResult /= Nothing =
+        let
+            newBoard = writeTile board coord (fromJust tileResult) True
         in
             solve' newBoard nextTile
-    | nextTile == (0,0) = board
-    | otherwise = solve' board nextTile
+    | nextTile == (0,0) = (changed, board)
+    | otherwise = solve' board nextTile changed
     where
         tileResult = checkTile board coord
         nextTile = iterateTile board coord
