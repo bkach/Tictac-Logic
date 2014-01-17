@@ -48,8 +48,14 @@ neighbourToPair a (i,j)
 
 elemFilled m (i, j) = False -- Does row/col contain n/2 of any element?
 
---inBetweenRow m (i, j) =
-inBetween m (i, j) = False -- Is element in between 2 elements of the same value?
+inBetween a (i, j) -- Is element in between 2 elements of the same value?
+    | inBounds a (i+1,j) && inBounds a (i-1,j) && up /= Empty && (up == a ! (i+1,j)) = opposite up
+    | inBounds a (i,j+1) && inBounds a (i,j-1) && left /= Empty && a ! (i,j+1) == left = opposite left
+    | otherwise = Empty
+    where
+        up = a ! (i -1, j)
+        left = a ! (i, j-1)
+
 
 guess = False -- Randomly picks an element and dfs that shizz
 
@@ -85,7 +91,8 @@ lineToReadInt = (readWords) `fmap` getLine
 
 simpleSolve arr rws cls =
     let new = arr //[((i,j), c) | i<-[0..(rws-1)], j<-[0..(cls-1)], let c = (neighbourToPair arr (i,j)), c /= Empty]
-    in new
+        new_again = new //[((i,j), c) | i<-[0..(rws-1)], j<-[0..(cls-1)], let c = (inBetween new (i,j)), c /= Empty]
+    in new_again
 
 -- http://www.markhneedham.com/blog/2012/04/03/haskell-print-friendly-representation-of-an-array/
 printGrid :: Show a => Array (Int, Int) a -> IO [()]
