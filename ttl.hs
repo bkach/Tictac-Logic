@@ -17,6 +17,9 @@ instance Eq Tile where
 
 
 --type Matrix = Array (Int,Int)
+opposite X = O
+opposite O = X
+opposite _ = error "Only X and O have opposites"
 
 inBounds a (x,y)
     | x < 0 || y < 0 = False
