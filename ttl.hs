@@ -25,7 +25,27 @@ adjTwins board coord
                 Just (opposite (downTile board coord))
     | otherwise = Nothing
 
-elemFilled m (i, j) = False -- Does row/col contain n/2 of any element?
+countElemCol board (i,j) t
+    | i >= (rows board) = 0
+    | tile == t = 1 + (countElemCol board (i+1,j) t)
+    | otherwise = (countElemCol board (i+1,j) t)
+    where tile = readTile board (i,j)
+
+countElemRow board (i,j) t
+    | j >= (columns board) = 0
+    | tile == t = 1 + (countElemRow board (i,j+1) t)
+    | otherwise = (countElemRow board (i,j+1) t)
+    where tile = readTile board (i,j)
+
+elemFilled board (i,j)
+    | countElemCol board (0, j) X == halfRow = Just O
+    | countElemCol board (0, j) O == halfRow = Just X
+    | countElemRow board (i, 0) X == halfCol = Just O
+    | countElemRow board (i, 0) O == halfCol = Just X
+    | otherwise = Nothing
+    where
+        halfRow = rows board `div` 2
+        halfCol = columns board `div` 2
 
 inBetween board coord
     | Parser.inBounds board (left coord) &&
@@ -48,27 +68,30 @@ checkTile board coord
         btwn
     | adj /= Nothing =
         adj
+    | half /= Nothing =
+        half
     | otherwise = Nothing
     where
         btwn = inBetween board coord
         adj = adjTwins board coord
-
+        half = elemFilled board coord
 
 guess = False -- Randomly picks an element and dfs that shizz
 
 solve board =
-    | changed = solve newBoard
-    | filled = newBoard --Guessing
-    | otherwise =
+    -- | changed = solve newBoard
+    -- | filled = newBoard --Guessing
+    -- | otherwise =
+        newBoard
     where
         (changed, newBoard) = solve' board (0,0) False
 
 solve' board coord changed
     | tileResult /= Nothing =
         let
-            newBoard = writeTile board coord (fromJust tileResult) True
+            newBoard = writeTile board coord (fromJust tileResult)
         in
-            solve' newBoard nextTile
+            solve' newBoard nextTile True
     | nextTile == (0,0) = (changed, board)
     | otherwise = solve' board nextTile changed
     where
