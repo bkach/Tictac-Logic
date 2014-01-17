@@ -96,12 +96,31 @@ lineToReadInt :: IO[Int]
 lineToReadInt = (readWords) `fmap` getLine
 --readLine = scanLine 0 `fmap` getLine
 
+simpleSolve arr rws cls =
+    let new = arr //[((i,j), c) | i<-[0..(rws-1)], j<-[0..(cls-1)], let c = (neighbourToPair arr (i,j)), c /= Empty]
+    in new
+
+-- http://www.markhneedham.com/blog/2012/04/03/haskell-print-friendly-representation-of-an-array/
+printGrid :: Show a => Array (Int, Int) a -> IO [()]
+printGrid grid = sequence $ map (putStrLn . textRepresentation) $ toSimpleArray grid
+
+toSimpleArray :: Array (Int, Int) a -> [[a]]
+toSimpleArray grid = [[grid ! (x, y) | x<-[lowx..highx]] |  y<-[lowy..highy]]
+    where ((lowx, lowy), (highx, highy)) =  bounds grid
+
+textRepresentation :: Show a => [a] -> String
+textRepresentation row = foldl (\acc y -> acc ++ (show y)) "" row
+
 main = do
     ln <- lineToReadInt
     let rws = ln !! 0
         cls = ln !! 1
     board <- getLineN rws 0
     let arr = makeArray (rws-1) (cls-1) board
-        --b = arr // [((i,j), c) | i<-[0..(rws-1)], j<-[0..(cls-1)], let c = (ntp arr (i,j)), c /= Empty] -- Updates the array
-        b = [((i,j), c) | i<-[0..(rws-1)], j<-[0..(cls-1)], let c = (neighbourToPair arr (i,j)), c /= Empty] -- Just to see which ones are updated
-    print b
+        b = simpleSolve arr rws cls
+    print "INITIAL"
+    printGrid arr
+    print "-----------"
+    print "1 Iteration"
+    printGrid b
+
