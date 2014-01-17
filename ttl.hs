@@ -33,31 +33,18 @@ inBounds a (x,y)
     let (_, (i,j)) = bounds a
     in x <= i && y <= j
 
-checkLeft a (i,j)
-    | inBounds a (i, j-2) && a ! (i, j-1) == a ! (i, j-2) = a ! (i, j-1)
-    | otherwise = Empty
-checkRight a (i,j)
-    | inBounds a (i, j+2) && a ! (i, j+1) == a ! (i, j+2) = a ! (i, j+1)
-    | otherwise = Empty
-checkUp a (i,j)
-    | inBounds a (i-2, j) && a ! (i -1, j) == a ! (i-2, j) = a ! (i-1, j)
-    | otherwise = Empty
-checkDown a (i,j)
-    | inBounds a (i+2, j) && a ! (i+1, j) == a ! (i+2, j)  = a ! (i+1, j)
-    | otherwise = Empty
-
- -- Checks to see if neighbours have two elements appearing after eachother Maybe Int
-neighbourToPair a (i, j)
-    | c1 /= Empty = opposite c1
-    | c2 /= Empty = opposite c2
-    | c3 /= Empty = opposite c3
-    | c4 /= Empty = opposite c4
+-- Checks to see if neighbours have two elements appearing after eachother Maybe Int
+neighbourToPair a (i,j)
+    | inBounds a (i, j-2) && left /= Empty && left == a ! (i, j-2) = opposite left
+    | inBounds a (i, j+2) && right /= Empty && right == a ! (i, j+2) = opposite right
+    | inBounds a (i-2, j) && up == a ! (i-2, j) = opposite up
+    | inBounds a (i+2, j) && down == a ! (i+2, j) = opposite down
     | otherwise = Empty
     where
-        c1 = checkLeft a (i, j)
-        c2 = checkRight a (i, j)
-        c3 = checkUp a (i, j)
-        c4 = checkDown a (i, j)
+        left = a ! (i, j-1)
+        right = a ! (i, j+1)
+        up = a ! (i -1, j)
+        down = a ! (i +1, j)
 
 elemFilled m (i, j) = False -- Does row/col contain n/2 of any element?
 
