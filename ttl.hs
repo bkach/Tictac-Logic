@@ -1,50 +1,73 @@
 import Parser
 import Data.Array
 import Data.Maybe
+import Debug.Trace
 
 type Position = (Int, Int)
 
 
-checkLeft board (i,j)
-    | Parser.inBounds board (i, j-2) = 
-        (left board (i, j)) == (leftN 2 board (i, j))
-    | otherwise = False
-
-checkRight board (i,j)
-    | Parser.inBounds board (i, j+2) = 
-        (right board (i, j)) == (rightN 2 board (i, j))
-    | otherwise = False
-
-checkUp board (i,j)
-    | Parser.inBounds board (i-2, j) = 
-        (up board (i, j)) == (upN 2 board (i, j))
-    | otherwise = False
-
-checkDown board (i,j)
-    | Parser.inBounds board (i+2, j) = 
-        (down board (i, j)) == (downN 2 board (i, j))
-
-neighbourToPair board coord
-    | checkLeft board coord = Just (left board coord)
-    | checkRight board coord = Just (right board coord)
-    | checkUp board coord = Just (up board coord)
-    | checkDown board coord = Just (down board coord)
+adjTwins board coord
+    | Parser.inBounds board (leftN 2 coord) &&
+        (leftTile board coord) /= Empty &&
+            ((leftTile board coord) == (leftNTile 2 board coord)) =
+                Just (opposite (leftTile board coord))
+    | Parser.inBounds board (rightN 2 coord) &&
+        (rightTile board coord) /= Empty &&
+            ((rightTile board coord) == (rightNTile 2 board coord)) =
+                Just (opposite (rightTile board coord))
+    | Parser.inBounds board (upN 2 coord) &&
+        (upTile board coord) /= Empty &&
+            ((upTile board coord) == (upNTile 2 board coord)) =
+                Just (opposite (upTile board coord))
+    | Parser.inBounds board (downN 2 coord) &&
+        (downTile board coord) /= Empty &&
+            ((downTile board coord) == (downNTile 2 board coord)) =
+                Just (opposite (downTile board coord))
     | otherwise = Nothing
-    
-    -- Checks to see if neighbours have two elements appearing after eachother Maybe Int
-   
 
 elemFilled m (i, j) = False -- Does row/col contain n/2 of any element?
 
---inBetweenRow m (i, j) =
-inBetween m (i, j) = False -- Is element in between 2 elements of the same value?
+inBetween board coord
+    | Parser.inBounds board (left coord) &&
+        (leftTile board coord) /= Empty &&
+            Parser.inBounds board (right coord) && 
+                ((leftTile board coord) == (rightTile board coord)) =
+                    Just (opposite (leftTile board coord))
+    | Parser.inBounds board (up coord) &&
+        (upTile board coord) /= Empty &&
+            Parser.inBounds board (down coord) && 
+                ((upTile board coord) == (downTile board coord)) =
+                    Just (opposite (upTile board coord))
+    | otherwise = Nothing
+       
+
+checkTile board coord
+    | readTile board coord /= Empty =
+        Nothing
+    | btwn /= Nothing =
+        btwn
+    | adj /= Nothing =
+        adj
+    | otherwise = Nothing
+    where
+        btwn = inBetween board coord
+        adj = adjTwins board coord
+
 
 guess = False -- Randomly picks an element and dfs that shizz
 
-solve m =
-    False -- Solves binero
-
-solver = False
+solve board = solve' board (0,0)
+solve' board coord
+    | tileResult /= Nothing = 
+        let 
+            newBoard = writeTile board coord (fromJust tileResult)
+        in
+            solve' newBoard nextTile
+    | nextTile == (0,0) = board
+    | otherwise = solve' board nextTile
+    where
+        tileResult = checkTile board coord
+        nextTile = iterateTile board coord
 
 printBoard [] = putStr "\n"
 printBoard (x:xs) = do
@@ -55,7 +78,6 @@ printRow (x:xs) = do
     putStr (show x)
     printRow xs
 
--- Validate solution
 --validate :: Matrix -> Bool
 validate m = False
 
@@ -65,4 +87,4 @@ lineToRead = (map read . words) `fmap` getLine
 main :: IO ()
 main = do
     board <- getBoard
-    printBoard board
+    printBoard (solve board)
