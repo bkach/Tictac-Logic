@@ -37,8 +37,8 @@ inBounds a (x,y)
 neighbourToPair a (i,j)
     | inBounds a (i, j-2) && left /= Empty && left == a ! (i, j-2) = opposite left
     | inBounds a (i, j+2) && right /= Empty && right == a ! (i, j+2) = opposite right
-    | inBounds a (i-2, j) && up == a ! (i-2, j) = opposite up
-    | inBounds a (i+2, j) && down == a ! (i+2, j) = opposite down
+    | inBounds a (i-2, j) && up /= Empty && up == a ! (i-2, j) = opposite up
+    | inBounds a (i+2, j) && down /= Empty && down == a ! (i+2, j) = opposite down
     | otherwise = Empty
     where
         left = a ! (i, j-1)
