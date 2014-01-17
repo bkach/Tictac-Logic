@@ -69,8 +69,18 @@ makeArray n m = do
 --validate :: Matrix -> Bool
 validate m = False
 
-lineToRead :: IO[Int]
-lineToRead = (map read . words) `fmap` getLine
+scanLine i j [] = []
+scanLine i j (h:xs) = (((i,j), toTile h):(scanLine i (j+1) xs))
+
+--getLineN :: IO [((Int, Int),Tile)]
+getLineN rows n
+    | rows == n = return []
+    | otherwise = do
+        l <- getLine
+        next <- (getLineN rows (n+1))
+        return $ (scanLine n 0 l) ++ next
+
+--readLine = scanLine 0 `fmap` getLine
 
 main :: IO ()
 main = do
