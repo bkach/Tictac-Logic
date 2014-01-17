@@ -15,6 +15,10 @@ instance Eq Tile where
     _ == _  = False
 
 
+toTile '.' = Empty
+toTile 'X' = X
+toTile 'O' = O
+toTile p = error [p]
 
 --type Matrix = Array (Int,Int)
 opposite X = O
