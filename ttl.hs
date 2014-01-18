@@ -2,10 +2,9 @@ import Parser
 import Data.Array
 import Data.Maybe
 import Debug.Trace
+import Data.List
 
-type Position = (Int, Int)
-
-
+adjTwins :: [[Tile]] -> (Int, Int) -> Maybe Tile
 adjTwins board coord
     | Parser.inBounds board (leftN 2 coord) &&
         (leftTile board coord) /= Empty &&
@@ -25,28 +24,32 @@ adjTwins board coord
                 Just (opposite (downTile board coord))
     | otherwise = Nothing
 
+countElemCol :: (Eq a1, Num a) => [[a1]] -> (Int, Int) -> a1 -> a
 countElemCol board (i,j) t
     | i >= (rows board) = 0
     | tile == t = 1 + (countElemCol board (i+1,j) t)
     | otherwise = (countElemCol board (i+1,j) t)
     where tile = readTile board (i,j)
 
+countElemRow :: (Eq a1, Num a) => [[a1]] -> (Int, Int) -> a1 -> a
 countElemRow board (i,j) t
     | j >= (columns board) = 0
     | tile == t = 1 + (countElemRow board (i,j+1) t)
     | otherwise = (countElemRow board (i,j+1) t)
     where tile = readTile board (i,j)
 
+elemFilled :: [[Tile]] -> (Int, Int) -> Maybe Tile
 elemFilled board (i,j)
-    | countElemCol board (0, j) X == halfRow = Just O
-    | countElemCol board (0, j) O == halfRow = Just X
-    | countElemRow board (i, 0) X == halfCol = Just O
-    | countElemRow board (i, 0) O == halfCol = Just X
+    | countElemCol board (0, j) X == halfCol = Just O
+    | countElemCol board (0, j) O == halfCol = Just X
+    | countElemRow board (i, 0) X == halfRow = Just O
+    | countElemRow board (i, 0) O == halfRow = Just X
     | otherwise = Nothing
     where
-        halfRow = rows board `div` 2
-        halfCol = columns board `div` 2
+        halfCol = (rows board +1)`div` 2
+        halfRow = (columns board +1) `div` 2
 
+inBetween :: [[Tile]] -> (Int, Int) -> Maybe Tile
 inBetween board coord
     | Parser.inBounds board (left coord) &&
         (leftTile board coord) /= Empty &&
@@ -60,7 +63,7 @@ inBetween board coord
                     Just (opposite (upTile board coord))
     | otherwise = Nothing
 
-
+checkTile :: [[Tile]] -> (Int, Int) -> Maybe Tile
 checkTile board coord
     | readTile board coord /= Empty =
         Nothing
@@ -76,39 +79,74 @@ checkTile board coord
         adj = adjTwins board coord
         half = elemFilled board coord
 
-guess = False -- Randomly picks an element and dfs that shizz
+findEmptyIndex :: [[Tile]] -> (Int, Int) -> (Int, Int)
+findEmptyIndex board coord
+    | (readTile board coord) == Empty = coord
+    | nextTile == (0,0) = error (show board)
+    | otherwise = findEmptyIndex board nextTile
+    where nextTile = iterateTile board coord
 
-solve board =
-    -- | changed = solve newBoard
-    -- | filled = newBoard --Guessing
-    -- | otherwise =
-        newBoard
+fillFirstEmpty :: [[Tile]] -> Tile -> [[Tile]]
+fillFirstEmpty board t = writeTile board (findEmptyIndex board (0,0)) t
+
+dfs :: [[[Tile]]] -> [[Tile]]
+dfs [] = error "No solution homie!"
+dfs (board:boards)
+    | full && validate newBoard = newBoard
+    | full && not (validate newBoard) = dfs boards
+    | not changed =
+        let x = (fillFirstEmpty board X)
+            o = (fillFirstEmpty board O)
+        in dfs (x:o:boards)
+    | otherwise = dfs (newBoard:boards)
     where
         (changed, newBoard) = solve' board (0,0) False
+        full = filled newBoard
 
+solve' :: [[Tile]] -> (Int, Int) -> Bool -> (Bool, [[Tile]])
 solve' board coord changed
     | tileResult /= Nothing =
-        let
-            newBoard = writeTile board coord (fromJust tileResult)
-        in
-            solve' newBoard nextTile True
+        let newBoard = writeTile board coord (fromJust tileResult)
+        in solve' newBoard nextTile True
     | nextTile == (0,0) = (changed, board)
     | otherwise = solve' board nextTile changed
     where
         tileResult = checkTile board coord
         nextTile = iterateTile board coord
 
+checkRow :: Eq a => a -> [a] -> Bool
+checkRow row [] = True
+checkRow row (x:xs)
+    | row == x = False
+    | otherwise = checkRow row xs
+
+checkRows :: Eq t => [t] -> Bool
+checkRows [] = True
+checkRows (x:xs)
+    | not check = False
+    | otherwise = checkRows xs
+    where
+        check = checkRow x xs
+
+validate :: Eq a => [[a]] -> Bool
+validate board
+    | cols && rows = True
+    | otherwise = False
+    where
+        cols = checkRows $ transpose board
+        rows = checkRows board
+
+printBoard :: Show a => [[a]] -> IO ()
 printBoard [] = putStr "\n"
 printBoard (x:xs) = do
     printRow x
     printBoard xs
+
+printRow :: Show a => [a] -> IO ()
 printRow [] = putStr "\n"
 printRow (x:xs) = do
     putStr (show x)
     printRow xs
-
---validate :: Matrix -> Bool
-validate m = False
 
 lineToRead :: IO[Int]
 lineToRead = (map read . words) `fmap` getLine
@@ -116,4 +154,4 @@ lineToRead = (map read . words) `fmap` getLine
 main :: IO ()
 main = do
     board <- getBoard
-    printBoard (solve board)
+    printBoard $ dfs [board]
