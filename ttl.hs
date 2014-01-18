@@ -1,7 +1,9 @@
+--module Ttl where
 import Parser
 import Data.Array
 import Data.Maybe
 import Debug.Trace
+import Data.List
 
 type Position = (Int, Int)
 
@@ -38,14 +40,14 @@ countElemRow board (i,j) t
     where tile = readTile board (i,j)
 
 elemFilled board (i,j)
-    | countElemCol board (0, j) X == halfRow = Just O
-    | countElemCol board (0, j) O == halfRow = Just X
-    | countElemRow board (i, 0) X == halfCol = Just O
-    | countElemRow board (i, 0) O == halfCol = Just X
+    | countElemCol board (0, j) X == halfCol = Just O
+    | countElemCol board (0, j) O == halfCol = Just X
+    | countElemRow board (i, 0) X == halfRow = Just O
+    | countElemRow board (i, 0) O == halfRow = Just X
     | otherwise = Nothing
     where
-        halfRow = rows board `div` 2
-        halfCol = columns board `div` 2
+        halfCol = (rows board +1)`div` 2
+        halfRow = (columns board +1) `div` 2
 
 inBetween board coord
     | Parser.inBounds board (left coord) &&
@@ -76,27 +78,74 @@ checkTile board coord
         adj = adjTwins board coord
         half = elemFilled board coord
 
-guess = False -- Randomly picks an element and dfs that shizz
+findEmptyIndex board coord
+    | (readTile board coord) == Empty = coord
+    | nextTile == (0,0) = error (show board)
+    | otherwise = findEmptyIndex board nextTile
+    where nextTile = iterateTile board coord
 
-solve board =
-    -- | changed = solve newBoard
-    -- | filled = newBoard --Guessing
-    -- | otherwise =
-        newBoard
+fillFirstEmpty board t = writeTile board (findEmptyIndex board (0,0)) t
+
+--guess board
+--    | filled x && (validate x) = x
+--    | filled o && (validate o)  = o
+--    | otherwise = error "No Solution"
+--    where
+--        x = solve
+--        o = solve (fillFirstEmpty board O)
+
+dfs [] = error "No solution homie!"
+dfs (board:boards)
+    | full && validate newBoard = newBoard
+    | full && not (validate newBoard) = dfs boards
+    | not changed =
+        let x = (fillFirstEmpty board X)
+            o = (fillFirstEmpty board O)
+        in dfs (x:o:boards)
+    | otherwise = dfs (newBoard:boards)
     where
         (changed, newBoard) = solve' board (0,0) False
+        full = filled newBoard
+
+--solve board
+--    | full && (validate newBoard) = newBoard
+--    | full && not (validate newBoard) = error "NoSolu"
+--    | not changed = guess board
+--    | otherwise = solve newBoard
+--    where
+--        (changed, newBoard) = solve' board (0,0) False
+--        full = filled newBoard
+ --       guessBoard = guess newBoard
 
 solve' board coord changed
     | tileResult /= Nothing =
-        let
-            newBoard = writeTile board coord (fromJust tileResult)
-        in
-            solve' newBoard nextTile True
+        let newBoard = writeTile board coord (fromJust tileResult)
+        in solve' newBoard nextTile True
     | nextTile == (0,0) = (changed, board)
     | otherwise = solve' board nextTile changed
     where
         tileResult = checkTile board coord
         nextTile = iterateTile board coord
+
+checkRow row [] = True
+checkRow row (x:xs)
+    | row == x = False
+    | otherwise = checkRow row xs
+
+checkRows [] = True
+checkRows (x:xs)
+    | not check = False
+    | otherwise = checkRows xs
+    where
+        check = checkRow x xs
+
+validate board
+    | cols && rows = True
+    | otherwise = False
+    where
+        cols = checkRows $ transpose board
+        rows = checkRows board
+
 
 printBoard [] = putStr "\n"
 printBoard (x:xs) = do
@@ -107,13 +156,10 @@ printRow (x:xs) = do
     putStr (show x)
     printRow xs
 
---validate :: Matrix -> Bool
-validate m = False
-
 lineToRead :: IO[Int]
 lineToRead = (map read . words) `fmap` getLine
 
 main :: IO ()
 main = do
     board <- getBoard
-    printBoard (solve board)
+    printBoard $ dfs [board]
