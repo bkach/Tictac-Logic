@@ -1,3 +1,4 @@
+--module Ttl where
 import Parser
 import Data.Array
 import Data.Maybe
@@ -79,17 +80,33 @@ checkTile board coord
         adj = adjTwins board coord
         half = elemFilled board coord
 
+<<<<<<< HEAD
 findEmptyIndex :: [[Tile]] -> (Int, Int) -> (Int, Int)
+=======
+>>>>>>> 9426896ac2885d055176b3176a5580abbc056cc1
 findEmptyIndex board coord
     | (readTile board coord) == Empty = coord
     | nextTile == (0,0) = error (show board)
     | otherwise = findEmptyIndex board nextTile
     where nextTile = iterateTile board coord
 
+<<<<<<< HEAD
 fillFirstEmpty :: [[Tile]] -> Tile -> [[Tile]]
 fillFirstEmpty board t = writeTile board (findEmptyIndex board (0,0)) t
 
 dfs :: [[[Tile]]] -> [[Tile]]
+=======
+fillFirstEmpty board t = writeTile board (findEmptyIndex board (0,0)) t
+
+--guess board
+--    | filled x && (validate x) = x
+--    | filled o && (validate o)  = o
+--    | otherwise = error "No Solution"
+--    where
+--        x = solve
+--        o = solve (fillFirstEmpty board O)
+
+>>>>>>> 9426896ac2885d055176b3176a5580abbc056cc1
 dfs [] = error "No solution homie!"
 dfs (board:boards)
     | full && validate newBoard = newBoard
@@ -102,6 +119,19 @@ dfs (board:boards)
     where
         (changed, newBoard) = solve' board (0,0) False
         full = filled newBoard
+<<<<<<< HEAD
+=======
+
+--solve board
+--    | full && (validate newBoard) = newBoard
+--    | full && not (validate newBoard) = error "NoSolu"
+--    | not changed = guess board
+--    | otherwise = solve newBoard
+--    where
+--        (changed, newBoard) = solve' board (0,0) False
+--        full = filled newBoard
+ --       guessBoard = guess newBoard
+>>>>>>> 9426896ac2885d055176b3176a5580abbc056cc1
 
 solve' :: [[Tile]] -> (Int, Int) -> Bool -> (Bool, [[Tile]])
 solve' board coord changed
@@ -114,13 +144,19 @@ solve' board coord changed
         tileResult = checkTile board coord
         nextTile = iterateTile board coord
 
+<<<<<<< HEAD
 checkRow :: Eq a => a -> [a] -> Bool
+=======
+>>>>>>> 9426896ac2885d055176b3176a5580abbc056cc1
 checkRow row [] = True
 checkRow row (x:xs)
     | row == x = False
     | otherwise = checkRow row xs
 
+<<<<<<< HEAD
 checkRows :: Eq t => [t] -> Bool
+=======
+>>>>>>> 9426896ac2885d055176b3176a5580abbc056cc1
 checkRows [] = True
 checkRows (x:xs)
     | not check = False
@@ -128,7 +164,10 @@ checkRows (x:xs)
     where
         check = checkRow x xs
 
+<<<<<<< HEAD
 validate :: Eq a => [[a]] -> Bool
+=======
+>>>>>>> 9426896ac2885d055176b3176a5580abbc056cc1
 validate board
     | cols && rows = True
     | otherwise = False
@@ -136,7 +175,11 @@ validate board
         cols = checkRows $ transpose board
         rows = checkRows board
 
+<<<<<<< HEAD
 printBoard :: Show a => [[a]] -> IO ()
+=======
+
+>>>>>>> 9426896ac2885d055176b3176a5580abbc056cc1
 printBoard [] = putStr "\n"
 printBoard (x:xs) = do
     printRow x
