@@ -13,12 +13,6 @@ readLine = (map toTile) `fmap` getLine
 readWords :: (Read a) => String -> [a]
 readWords = map read . words
 
-lineToReadInt :: IO[Int]
-lineToReadInt = readWords `fmap` getLine
-
-lineToReadStr :: IO[String]
-lineToReadStr = lines `fmap` getLine
-
 lineToRead :: IO[Int]
 lineToRead = readWords `fmap` getLine
 
@@ -45,7 +39,7 @@ printBoard (x:xs) = do
 -------------------------------------------------------------------------------
 getBoard :: IO [[Tile]]
 getBoard = do
-    ln <- lineToReadInt
+    ln <- lineToRead
     let rws = ln !! 0
         cls = ln !! 1
     board <- replicateM rws readLine
