@@ -186,5 +186,3 @@ validate board
     where
         cols = checkRows $ transpose board
         rows = checkRows board
-
-
