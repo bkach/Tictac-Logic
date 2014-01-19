@@ -140,8 +140,9 @@ solve' board coord changed
 
 -------------------------------------------------------------------------------
 -- solve [board] - Tries to solve each board by using solve' (rule based),
--- otherwise starts guessing elements and and keep trying. This is done in a
--- DFS way. Returns solved board or throws an error.
+-- otherwise puts 2 new boards into the seach queue with an X and an O at the
+-- first empty tile. Searching is done in a DFS way.
+-- Returns solved board or throws an error.
 -------------------------------------------------------------------------------
 solve :: [[[Tile]]] -> [[Tile]]
 solve [] = error "No solution found!"
