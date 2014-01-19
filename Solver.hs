@@ -37,7 +37,7 @@ adjTwins board coord
 -------------------------------------------------------------------------------
 countElemCol :: (Eq a1, Num a) => [[a1]] -> (Int, Int) -> a1 -> a
 countElemCol board (i,j) t
-    | i >= (rows board) = 0
+    | i > (rows board) = 0
     | tile == t = 1 + countElemCol board (down coord) t
     | otherwise = countElemCol board (down coord) t
     where
@@ -50,7 +50,7 @@ countElemCol board (i,j) t
 -------------------------------------------------------------------------------
 countElemRow :: (Eq a1, Num a) => [[a1]] -> (Int, Int) -> a1 -> a
 countElemRow board (i,j) t
-    | j >= (columns board) = 0
+    | j > (columns board) = 0
     | tile == t = 1 + countElemRow board (right coord) t
     | otherwise = countElemRow board (right coord) t
     where
