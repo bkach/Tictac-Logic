@@ -28,15 +28,15 @@ rightN n (i,j) = (i,j+n)
 upN n (i,j) = (i+(n*(-1)),j)
 downN n (i,j) = (i+(n*1),j)
 
-leftNTile n board (i,j) = readTile board (i,j+(n*(-1)))
-rightNTile n board (i,j) = readTile board (i,j+n)
-upNTile n board (i,j) = readTile board (i+(n*(-1)),j)
-downNTile n board (i,j) = readTile board (i+(n*1),j)
+leftTile board coord = readTile board $ left coord
+rightTile board coord = readTile board $ right coord
+upTile board coord = readTile board $ up coord
+downTile board coord = readTile board $ down coord
 
-leftTile board (i,j) = readTile board (i,j-1)
-rightTile board (i,j) = readTile board (i,j+1)
-upTile board (i,j) = readTile board (i-1,j)
-downTile board (i,j) = readTile board (i+1,j)
+leftNTile n board coord = readTile board $ leftN n coord
+rightNTile n board coord = readTile board $ rightN n coord
+upNTile n board coord = readTile board $ upN n coord
+downNTile n board coord = readTile board $ downN n coord
 
 filled [] = True
 filled (x:xs)
