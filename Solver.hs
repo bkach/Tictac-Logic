@@ -88,9 +88,8 @@ findEmptyIndex board coord
     | otherwise = findEmptyIndex board nextTile
     where nextTile = iterateTile board coord
 
-fillFirstEmpty :: [[Tile]] -> Tile -> [[Tile]]
-fillFirstEmpty board t = writeTile board (findEmptyIndex board (0,0)) t
-
+setFirstEmpty :: [[Tile]] -> Tile -> [[Tile]]
+setFirstEmpty board t = writeTile board (findEmptyIndex board (0,0)) t
 solve' :: [[Tile]] -> (Int, Int) -> Bool -> (Bool, [[Tile]])
 solve' board coord changed
     | tileResult /= Nothing =
@@ -108,8 +107,8 @@ solve (board:boards)
     | full && validate newBoard = newBoard
     | full && not (validate newBoard) = solve boards
     | not changed =
-        let x = (fillFirstEmpty board X)
-            o = (fillFirstEmpty board O)
+        let x = (setFirstEmpty board X)
+            o = (setFirstEmpty board O)
         in solve (x:o:boards)
     | otherwise = solve (newBoard:boards)
     where
