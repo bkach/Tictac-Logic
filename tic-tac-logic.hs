@@ -1,3 +1,8 @@
+----------------------------------------------------------------------
+--- authors: Boris Kachscovsky and Alan Ghobadi
+--- Tic-tac logic
+----------------------------------------------------------------------
+
 import Tile
 import Matrix
 import Solver
