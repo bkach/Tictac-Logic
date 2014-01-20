@@ -78,11 +78,11 @@ avoidTriplets board coord
 -- opposite of that
 -------------------------------------------------------------------------------
 avoidDupRow board coord
-    | numRowTiles board coord == 2 && readTile board coord == Empty
-     && countElemRow board coord X == countElemRow board coord O  =
+    | numRowTiles board coord == 2 &&
+     countElemRow board coord X == countElemRow board coord O  =
         let xRowFilled = writeTile board coord X
             oRowFilled = setFirstEmptyRow xRowFilled (i, 0) O
-            rowUnique = checkRows oRowFilled
+            rowUnique = checkRows oRowFilled && checkRows (transpose oRowFilled)
         in case rowUnique of
             True -> Just X
             _ -> Just O
@@ -96,18 +96,64 @@ avoidDupRow board coord
 -- opposite of that
 -------------------------------------------------------------------------------
 avoidDupCol board coord
-    | numColTiles board coord == 2 && readTile board coord == Empty
-     && countElemCol board coord X == countElemCol board coord O  =
-        let xColFilled = writeTile board coord O
-            oColFilled = setFirstEmptyCol xColFilled (0, j) X
-            colUnique = checkRows (transpose oColFilled)
+    | numColTiles board coord == 2 &&
+     countElemCol board coord X == countElemCol board coord O  =
+        let xColFilled = writeTile board coord X
+            oColFilled = setFirstEmptyCol xColFilled (0, j) O
+            colUnique = checkRows (transpose oColFilled) && checkRows oColFilled
         in case colUnique of
             True -> Just X
             _ -> Just O
     | otherwise = Nothing
     where
         (i,j) = coord
+-------------------------------------------------------------------------------
+avoidDupRow2 board coord
+    | noX == (halfRow - 1) && noO < noX  && (not $ coord `elem` twinEmptys) =
+            Just O
+    | noO == (halfRow - 1) && noX < noO  && (not $ coord `elem` twinEmptys) =
+            Just X
+    | otherwise = Nothing
+    where
+        (i,j) = coord
+        halfRow = (columns board +1) `div` 2
+        noX = countElemRow board (i, 0) X
+        noO= countElemRow board (i, 0) O
+        twinEmptys = rowTwinEmpty board (i,0) []
 
+avoidDupCol2 board coord
+    | noX == (halfCol - 1) && noO < noX  && (not $ coord `elem` twinEmptys) =
+            Just O
+    | noO == (halfCol - 1) && noX < noO  && (not $ coord `elem` twinEmptys) =
+            Just X
+    | otherwise = Nothing
+    where
+        (i,j) = coord
+        halfCol = (rows board +1) `div` 2
+        noX = countElemCol board (0,j) X
+        noO = countElemCol board (0,j) O
+        twinEmptys = colTwinEmpty board (0,j) []
+
+rowTwinEmpty board (i,j) acc
+    | j > (columns board) = []
+    | tile == Empty = rowTwinEmpty board (right coord) (coord:acc)
+    | length(acc) == 2 = acc
+    | otherwise = rowTwinEmpty board (right coord) []
+    where
+        coord = (i,j)
+        tile = readTile board coord
+
+colTwinEmpty board (i,j) acc
+    | i > (rows board) = []
+    | tile == Empty = colTwinEmpty board (down coord) (coord:acc)
+    | length(acc) == 2 = acc
+    | otherwise = colTwinEmpty board (down coord) []
+    where
+        coord = (i,j)
+        tile = readTile board coord
+-------------------------------------------------------------------------------
+-- numRowTiles board coord - Counts number of empty tiles in a row
+-------------------------------------------------------------------------------
 numRowTiles' board (i,j)
     | j > (columns board) = 0
     | tile == Empty = 1 + numRowTiles' board (right coord)
@@ -115,9 +161,6 @@ numRowTiles' board (i,j)
     where
         coord = (i,j)
         tile = readTile board coord
--------------------------------------------------------------------------------
--- numRowTiles board coord - Counts number of empty tiles in a row
--------------------------------------------------------------------------------
 numRowTiles board (i,j) = numRowTiles' board (i, 0)
 
 
@@ -128,12 +171,12 @@ numColTiles' board (i,j)
     where
         coord = (i,j)
         tile = readTile board coord
+
 -------------------------------------------------------------------------------
 -- numColTiles board coord - Counts number of empty tiles in a column
 -------------------------------------------------------------------------------
 numColTiles board (i,j) =
-    let
-    in numColTiles' board (0, j)
+    numColTiles' board (0, j)
 
 -------------------------------------------------------------------------------
 -- coundElemCol board coord tile - Counts the number of tiles that are equal
@@ -194,27 +237,6 @@ inBetween board coord
                     Just (opposite (upTile board coord))
     | otherwise = Nothing
 
--------------------------------------------------------------------------------
--- checkTile board coord - Tries to returns what to fill the tile at coord with
--- by checking the above rules
--------------------------------------------------------------------------------
-checkTile :: [[Tile]] -> (Int, Int) -> Maybe Tile
-checkTile board coord
-    | readTile board coord /= Empty = Nothing
-    | btwn /= Nothing = btwn
-    | adj /= Nothing = adj
-    | half /= Nothing = half
-    | triplets /= Nothing = triplets
-    | dupRow /= Nothing = dupRow
-    | dupCol /= Nothing = dupCol
-    | otherwise = Nothing
-    where
-        btwn = inBetween board coord
-        adj = adjTwins board coord
-        half = elemFilled board coord
-        triplets = avoidTriplets board coord
-        dupRow = avoidDupRow board coord
-        dupCol = avoidDupCol board coord
 
 -------------------------------------------------------------------------------
 -- findEmptyIndex board coord - Finds the index of the first empty tile in board
@@ -239,16 +261,42 @@ findEmptyIndexCol board coord
     where nextTile = iterateTileCol board coord
 
 setFirstEmptyCol :: [[Tile]] -> (Int, Int) -> Tile -> [[Tile]]
-setFirstEmptyCol board coord t = writeTile board (findEmptyIndexCol board coord) t
+setFirstEmptyCol board (i,j) t = writeTile board (findEmptyIndexCol board (0,j)) t
 
 setFirstEmptyRow :: [[Tile]] -> (Int, Int) -> Tile -> [[Tile]]
-setFirstEmptyRow board coord t = writeTile board (findEmptyIndex board coord) t
+setFirstEmptyRow board (i,j) t = writeTile board (findEmptyIndex board (i,0)) t
 
 -------------------------------------------------------------------------------
 -- fillFirstEmpty board t - Sets the first empty tile in board with t
 -------------------------------------------------------------------------------
 setFirstEmpty :: [[Tile]] -> Tile -> [[Tile]]
 setFirstEmpty board t = writeTile board (findEmptyIndex board (0,0)) t
+
+-------------------------------------------------------------------------------
+-- checkTile board coord - Tries to returns what to fill the tile at coord with
+-- by checking the above rules
+-------------------------------------------------------------------------------
+checkTile :: [[Tile]] -> (Int, Int) -> Maybe Tile
+checkTile board coord
+    | readTile board coord /= Empty = Nothing
+    | btwn /= Nothing = btwn
+    | adj /= Nothing = adj
+    -- | triplets /= Nothing = triplets
+    | half /= Nothing = half
+    -- | dupRow /= Nothing = dupRow
+    -- | dupCol /= Nothing = dupCol
+    -- | dupRow2 /= Nothing = dupRow2
+    -- | dupCol2 /= Nothing = dupCol2
+    | otherwise = Nothing
+    where
+        btwn = inBetween board coord
+        adj = adjTwins board coord
+        half = elemFilled board coord
+        triplets = avoidTriplets board coord
+        dupRow2 = avoidDupRow2 board coord
+        dupCol2 = avoidDupCol2 board coord
+        dupRow = avoidDupRow board coord
+        dupCol = avoidDupCol board coord
 
 -------------------------------------------------------------------------------
 -- solve' board coord changed - Goes through entire board once and tries to
@@ -275,6 +323,7 @@ solve' board coord changed
 solve :: [[[Tile]]] -> [[Tile]]
 solve [] = error "No solution found!"
 solve (board:boards)
+    | not (validate newBoard) = solve boards
     | full && validate newBoard = newBoard
     | full && not (validate newBoard) = solve boards
     | not changed =
@@ -293,7 +342,7 @@ solve (board:boards)
 checkTriplets' :: [Tile] -> Bool
 checkTriplets' [] = False
 checkTriplets' (first:xs)
-    | length(xs) >= 2 && (first == second) && (second == third) = True
+    | first /= Empty && length(xs) >= 2 && (first == second) && (second == third) = True
     | otherwise = checkTriplets' xs
     where
         second = head(xs)
@@ -333,18 +382,34 @@ checkRows [] = True
 checkRows (x:xs)
     | not check = False
     | otherwise = checkRows xs
-    where check = checkRow x xs
+    where
+        check = checkRow x xs
+
+equallXO' [] xs os = xs == os
+equallXO' (t:ts) xs os
+    | t == X = equallXO' ts (1+xs) os
+    | t == O = equallXO' ts xs (1+os)
+    | otherwise = True
+
+equallXO [] = True
+equallXO (x:xs)
+    | not check = False
+    | otherwise = equallXO xs
+        where check = equallXO' x 0 0
+
 -------------------------------------------------------------------------------
 -- validate board - Checks if pairs of rows and columns are unique
 -------------------------------------------------------------------------------
 validate :: [[Tile]] -> Bool
 validate board
-    | cols && rows && tripletsCol && tripletsRow = True
+    | cols && rows && tripletsCol && tripletsRow && equalRow && equalCol = True
     | otherwise = False
     where
         cols = checkRows $ transpose board
         rows = checkRows board
         tripletsCol = not $ checkTriplets $ transpose board
         tripletsRow = not $ checkTriplets board
+        equalRow = equallXO board
+        equalCol = equallXO $ transpose board
 
 
