@@ -27,13 +27,21 @@ columns :: [[a]] -> Int
 columns board = (Data.List.length(board !! 0)) - 1
 
 -------------------------------------------------------------------------------
--- iteratetile board coord - Iterates through the board row-wise and column-wise
+-- iterateTile board coord - Iterates through the board row-wise and column-wise
 -------------------------------------------------------------------------------
 iterateTile :: [[Tile]] -> (Int, Int) -> (Int, Int)
 iterateTile board (row,col)
     | col == (columns board) && row == (rows board) = (0,0)
     | col == (columns board) = (row+1,0)
     | otherwise = (row,col+1)
+
+-------------------------------------------------------------------------------
+-- iterateTileCol board coord - Iterates through the board column-wise and row-wise
+-------------------------------------------------------------------------------
+iterateTileCol board (row,col)
+    | col == (columns board) && row == (rows board) = (0,0)
+    | row == (rows board) = (0,col+1)
+    | otherwise = (row+1,col)
 
 -------------------------------------------------------------------------------
 -- Move in different directions within the matrix
