@@ -40,6 +40,7 @@ avoidTriplets board coord
     | inBounds board (rightN 4 coord) &&
         numRowTiles board coord == 3 &&
         right /= Empty &&
+        countElemRow board coord right > countElemRow board (i,0) (opposite right) &&
         rightNTile 2 board coord == Empty &&
         rightNTile 3 board coord == Empty &&
         rightNTile 4 board coord == opposite right =
@@ -47,6 +48,7 @@ avoidTriplets board coord
     | inBounds board (leftN 4 coord) &&
         numRowTiles board coord == 3 &&
         left /= Empty &&
+        countElemRow board coord left > countElemRow board (i,0) (opposite left) &&
         leftNTile 2 board coord == Empty &&
         leftNTile 3 board coord == Empty &&
         leftNTile 4 board coord == opposite left =
@@ -54,6 +56,7 @@ avoidTriplets board coord
     | inBounds board (upN 4 coord) &&
         numColTiles board coord == 3 &&
         up /= Empty &&
+        countElemCol board coord up > countElemCol board (0, j) (opposite up) &&
         upNTile 2 board coord == Empty &&
         upNTile 3 board coord == Empty &&
         upNTile 4 board coord == opposite up =
@@ -61,6 +64,7 @@ avoidTriplets board coord
     | inBounds board (downN 4 coord) &&
         numColTiles board coord == 3 &&
         down /= Empty &&
+        countElemCol board coord down > countElemCol board (0, j) (opposite down) &&
         downNTile 2 board coord == Empty &&
         downNTile 3 board coord == Empty &&
         downNTile 4 board coord == opposite down =
@@ -71,6 +75,7 @@ avoidTriplets board coord
         left = leftTile board coord
         up = upTile board coord
         down = downTile board coord
+        (i,j) = coord
 
 -------------------------------------------------------------------------------
 -- avoidDupRow board coord - When only two empty tiles exists in a row we
@@ -79,7 +84,7 @@ avoidTriplets board coord
 -------------------------------------------------------------------------------
 avoidDupRow board coord
     | numRowTiles board coord == 2 &&
-     countElemRow board coord X == countElemRow board coord O  =
+     countElemRow board (i,0) X == countElemRow board (i,0) O  =
         let xRowFilled = writeTile board coord X
             oRowFilled = setFirstEmptyRow xRowFilled (i, 0) O
             rowUnique = checkRows oRowFilled && checkRows (transpose oRowFilled)
@@ -97,7 +102,7 @@ avoidDupRow board coord
 -------------------------------------------------------------------------------
 avoidDupCol board coord
     | numColTiles board coord == 2 &&
-     countElemCol board coord X == countElemCol board coord O  =
+     countElemCol board (0,j) X == countElemCol board (0,j) O  =
         let xColFilled = writeTile board coord X
             oColFilled = setFirstEmptyCol xColFilled (0, j) O
             colUnique = checkRows (transpose oColFilled) && checkRows oColFilled
@@ -281,8 +286,9 @@ checkTile board coord
     | readTile board coord /= Empty = Nothing
     | btwn /= Nothing = btwn
     | adj /= Nothing = adj
-    -- | triplets /= Nothing = triplets
+    | triplets /= Nothing = triplets -- May cause problems
     | half /= Nothing = half
+    -- These ones causes the solution to not work
     -- | dupRow /= Nothing = dupRow
     -- | dupCol /= Nothing = dupCol
     -- | dupRow2 /= Nothing = dupRow2
@@ -323,14 +329,13 @@ solve' board coord changed
 solve :: [[[Tile]]] -> [[Tile]]
 solve [] = error "No solution found!"
 solve (board:boards)
-    | not (validate newBoard) = solve boards
     | full && validate newBoard = newBoard
-    | full && not (validate newBoard) = solve boards
+    | not (validate newBoard) = solve boards
     | not changed =
         let x = (setFirstEmpty board X)
             o = (setFirstEmpty board O)
-        in solve (x:o:boards)
-       --in error (show newBoard)
+         in solve (x:o:boards)
+        -- in error (show newBoard)
     | otherwise = solve (newBoard:boards)
     where
         (changed, newBoard) = solve' board (0,0) False
